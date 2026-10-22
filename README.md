@@ -12,5 +12,8 @@ Ball'lu Avrupa strateji oyunu: 136 ülke, 499 şehir, bütün dünya, NATO/AB/KG
 - **iPhone (en kolay):** Pages adresini Safari'de aç → Paylaş → **Ana Ekrana Ekle**. Uygulama gibi tam ekran açılır.
 - **iPhone (.ipa):** `BayrakSavaslari-iOS` imzasızdır; Sideloadly/AltStore ile kendi Apple hesabınla imzalayıp kurabilirsin.
 
-## Not
-APK, iPhone ve web sürümünde oyun **tek cihazda** oynanır (oyuncular "telefonu olmayan oyuncu" olarak eklenip sırayla emir verir). Telefonlardan birlikte bağlanmalı çok oyunculu mod Claude bağlantısında çalışır.
+## Çok oyunculu (Claude hesabı gerekmez)
+GitHub Pages, APK ve iPhone sürümünde telefonlar **oda koduyla** bağlanır:
+1. Bilgisayarda Pages adresini aç → **Oyunu Kur**. Sağ üstte 4 haneli **oda kodu** çıkar.
+2. Telefonlarda aynı adresi (ya da APK'yı) aç → **Oyuna Katıl** → kodu yaz → **Bağlan**.
+Bağlantı internet üzerinden (PeerJS) kurulur; herkesin internete bağlı olması yeterli.
