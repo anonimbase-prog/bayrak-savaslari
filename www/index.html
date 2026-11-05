@@ -10,8 +10,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Bayrak Savaşları">
 <meta name="theme-color" content="#f59f00">
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;600;800&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js" defer></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;600;800&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;600;800&display=swap"></noscript>
 <script>
 /* === Açılış koruması: eski tarayıcı motorlarında boş ekran yerine bilgi ver === */
 (function(){
@@ -29,7 +31,7 @@
   d.setAttribute('style','position:fixed;inset:0;z-index:99999;background:#0b1b33;color:#fff;font:15px/1.5 system-ui,Arial,sans-serif;padding:22px;overflow:auto;-webkit-overflow-scrolling:touch');
   d.innerHTML='<div style="max-width:520px;margin:0 auto"><div style="font-size:52px;text-align:center">⚠️</div>'+
    '<h2 style="text-align:center;margin:8px 0 6px">Oyun açılamadı</h2>'+
-   '<p style="opacity:.85">Telefonundaki <b>Android System WebView</b> ya da <b>Google Chrome</b> uygulaması eski olabilir. Play Store’dan ikisini de güncelleyip tekrar dene.</p>'+
+   '<p style="opacity:.85">Telefonu yeniden başlatıp tekrar dener misin? Sorun sürerse Play Store’dan <b>Android System WebView</b> ve <b>Google Chrome</b> güncellemelerini kontrol et.</p>'+
    '<p style="opacity:.85">Sorun sürerse tarayıcıdan da oynayabilirsin.</p>'+
    '<pre id="bwerr" style="white-space:pre-wrap;word-break:break-word;background:#07142a;border:1px solid #1d3557;border-radius:10px;padding:10px;font-size:12px;opacity:.9"></pre>'+
    '<button id="bwrl" style="width:100%;padding:14px;border:0;border-radius:12px;background:#e8590c;color:#fff;font-size:16px;font-weight:700">Yeniden dene</button></div>';
@@ -44,11 +46,11 @@
   if(!m)return;
   if(/peerjs|cdn\.jsdelivr|fonts\.googleapis/i.test(String(e&&e.filename||'')))return;
   if(/Peer is not defined|ResizeObserver|Script error/i.test(m))return;
-  if(window.MAP)return;                                   /* oyun acildiysa calismaya devam */
+  if(window.__BW_OK)return;                               /* oyun acildiysa calismaya devam */
   panel(m+(e&&e.lineno?(' (satir '+e.lineno+')'):''));
  },true);
- window.addEventListener('unhandledrejection',function(e){if(window.MAP)return;panel('Promise: '+(e&&e.reason&&e.reason.message||e.reason||''))});
- setTimeout(function(){ if(!window.MAP && !shown) panel('Oyun 20 saniyede yüklenemedi.'); },20000);
+ window.addEventListener('unhandledrejection',function(e){if(window.__BW_OK)return;panel('Promise: '+(e&&e.reason&&e.reason.message||e.reason||''))});
+ setTimeout(function(){ if(!window.__BW_OK && !shown) panel('Oyun yuklenemedi (zaman asimi).'); },45000);
 })();
 </script>
 <style>
@@ -3609,6 +3611,8 @@ function useCode(v){const k=String(v||'').trim().toLowerCase();
  if(!M[k]){toast('❌ Kod geçersiz');return}
  M[k].forEach(id=>monGrant(id));toast('🎁 Açıldı: '+M[k].length+' içerik');try{applyTheme()}catch(_){}setSync(true)}
 window.useCode=useCode;
+
+try{window.__BW_OK=1}catch(e){}
 </script>
 <script>
 /* Service worker: her açılışta yeni sürüm kontrolü, bulunca otomatik yenile */
@@ -3630,6 +3634,5 @@ if('serviceWorker' in navigator){
   });
  });
 }
-</script>
-</body>
+</script></body>
 </html>
