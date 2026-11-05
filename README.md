@@ -17,3 +17,7 @@ GitHub Pages, APK ve iPhone sürümünde telefonlar **oda koduyla** bağlanır:
 1. Bilgisayarda Pages adresini aç → **Oyunu Kur**. Sağ üstte 4 haneli **oda kodu** çıkar.
 2. Telefonlarda aynı adresi (ya da APK'yı) aç → **Oyuna Katıl** → kodu yaz → **Bağlan**.
 Bağlantı internet üzerinden (PeerJS) kurulur; herkesin internete bağlı olması yeterli.
+
+
+## Google Play
+Yayınlama adımları için: GOOGLE_PLAY_REHBERI.md

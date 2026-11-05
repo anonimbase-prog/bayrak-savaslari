@@ -1,1 +1,3 @@
-{"appId":"com.bayraksavaslari.oyun","appName":"Bayrak Savaşları","webDir":"www"}
+{"appId":"com.bayraksavaslari.oyun","appName":"Bayrak Savaşları","webDir":"www",
+ "android":{"backgroundColor":"#0f2747","allowMixedContent":false},
+ "server":{"androidScheme":"https"}}
