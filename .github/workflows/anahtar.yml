@@ -1,0 +1,16 @@
+name: 1) Google Play imza anahtari olustur (SADECE BIR KEZ)
+on: workflow_dispatch
+jobs:
+  key:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: |
+          PASS=$(openssl rand -hex 16)
+          keytool -genkeypair -v -keystore upload.jks -alias bayrak -keyalg RSA -keysize 4096 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=Bayrak Savaslari, O=Bayrak Savaslari, C=TR"
+          mkdir anahtar && cp upload.jks anahtar/
+          base64 -w0 upload.jks > anahtar/KEYSTORE_BASE64.txt
+          printf "KEYSTORE_PASSWORD=%s\nKEY_PASSWORD=%s\nKEY_ALIAS=bayrak\n\nBu dosyayi ve upload.jks dosyasini GUVENLI bir yerde sakla. Kaybedersen Play'e guncelleme yukleyemezsin (Play Console'dan sifirlama istemen gerekir).\n" "$PASS" "$PASS" > anahtar/SIFRELER.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: IMZA-ANAHTARI-GIZLI-SAKLA, path: anahtar, retention-days: 1 }
