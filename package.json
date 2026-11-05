@@ -1,0 +1,16 @@
+{
+ "name": "bayrak-savaslari",
+ "version": "1.0.0",
+ "private": true,
+ "dependencies": {
+  "@capacitor/android": "^7.0.0",
+  "@capacitor/core": "^7.0.0",
+  "@capacitor/ios": "^7.0.0",
+  "@capacitor-community/admob": "^7.0.0",
+  "cordova-plugin-purchase": "^13.11.0"
+ },
+ "devDependencies": {
+  "@capacitor/cli": "^7.0.0",
+  "@capacitor/assets": "^3.0.5"
+ }
+}
