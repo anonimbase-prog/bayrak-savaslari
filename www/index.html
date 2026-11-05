@@ -3610,5 +3610,26 @@ function useCode(v){const k=String(v||'').trim().toLowerCase();
  M[k].forEach(id=>monGrant(id));toast('🎁 Açıldı: '+M[k].length+' içerik');try{applyTheme()}catch(_){}setSync(true)}
 window.useCode=useCode;
 </script>
+<script>
+/* Service worker: her açılışta yeni sürüm kontrolü, bulunca otomatik yenile */
+if('serviceWorker' in navigator){
+ window.addEventListener('load',function(){
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){
+   r.update();
+   setInterval(function(){r.update()},60000);
+   r.addEventListener('updatefound',function(){
+    var nw=r.installing;if(!nw)return;
+    nw.addEventListener('statechange',function(){
+     if(nw.state==='installed'&&navigator.serviceWorker.controller){nw.postMessage('skipWaiting')}
+    });
+   });
+  }).catch(function(){});
+  var reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+   if(reloaded)return;reloaded=true;location.reload();
+  });
+ });
+}
+</script>
 </body>
 </html>
