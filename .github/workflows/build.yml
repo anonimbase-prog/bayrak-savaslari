@@ -14,14 +14,14 @@ jobs:
       KS: ${{ secrets.KEYSTORE_BASE64 }}
       KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      KEY_PASS: ${{ secrets.KEY_PASSWORD }}
+      KEY_PASS: ${{ secrets.KEY_PASS || secrets.KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: 21 }
-      - run: npm install
+        with: { distribution: temurin, java-version: 21, cache: gradle }
+      - run: npm install --legacy-peer-deps --omit=optional
       - run: npx cap add android
       - name: AdMob uygulama kimligini ekle
         env:
@@ -30,24 +30,58 @@ jobs:
           ID="${ADMOB_APP_ID:-ca-app-pub-3940256099942544~3347511713}"
           sed -i "s#</application>#<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$ID\"/></application>#" android/app/src/main/AndroidManifest.xml
           grep -q "com.android.vending.BILLING" android/app/src/main/AndroidManifest.xml || sed -i "s#<application#<uses-permission android:name=\"com.android.vending.BILLING\"/><application#" android/app/src/main/AndroidManifest.xml
-      - name: Uygulama ikonunu olustur
-        run: npx @capacitor/assets generate --android --iconBackgroundColor '#0f2747' --iconBackgroundColorDark '#0f2747' --splashBackgroundColor '#0f2747' --splashBackgroundColorDark '#0f2747'
+      - name: Uygulama ikonlarini yerlestir
+        run: cp -r android-res/* android/app/src/main/res/
       - run: npx cap sync android
+      - name: Indirme dayanikliligi (gecici ag hatalarina karsi)
+        run: |
+          {
+            echo "org.gradle.internal.repository.max.retries=8"
+            echo "org.gradle.internal.repository.initial.backoff=1000"
+            echo "org.gradle.internal.repository.max.backoff=16000"
+            echo "org.gradle.internal.http.connectionTimeout=120000"
+            echo "org.gradle.internal.http.socketTimeout=120000"
+            echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
+            echo "org.gradle.daemon=false"
+          } >> android/gradle.properties
       - name: Surum numarasini ayarla (her derlemede artar)
         run: |
           sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" android/app/build.gradle
           sed -i "s/versionName \"[^\"]*\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
       - name: Deneme APK (telefona direkt kurulur)
-        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+        run: |
+          cd android && chmod +x gradlew
+          for i in 1 2 3; do
+            ./gradlew assembleDebug --stacktrace && break
+            echo "::warning::Derleme $i. denemede basarisiz oldu, 30 sn sonra tekrar denenecek"
+            sleep 30
+          done
+          test -f app/build/outputs/apk/debug/app-debug.apk
       - uses: actions/upload-artifact@v4
         with:
           name: BayrakSavaslari-APK-deneme
           path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Yayin APK (imzali, hizli ve kucuk)
+        if: ${{ env.KS != '' }}
+        run: |
+          echo "$KS" | base64 -d > upload.jks
+          cd android
+          for i in 1 2 3; do ./gradlew assembleRelease && break; echo "::warning::Tekrar deneniyor ($i)"; sleep 30; done
+          ZA=$(ls $ANDROID_HOME/build-tools/*/zipalign | tail -1)
+          AS=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          "$ZA" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk ../aligned.apk
+          "$AS" sign --ks ../upload.jks --ks-pass "pass:$KS_PASS" --key-pass "pass:$KEY_PASS" --ks-key-alias "$KEY_ALIAS" --out ../BayrakSavaslari.apk ../aligned.apk
+      - uses: actions/upload-artifact@v4
+        if: ${{ env.KS != '' }}
+        with:
+          name: BayrakSavaslari-APK-yayin
+          path: BayrakSavaslari.apk
       - name: Google Play icin AAB (imzali)
         if: ${{ env.KS != '' }}
         run: |
           echo "$KS" | base64 -d > upload.jks
-          cd android && ./gradlew bundleRelease
+          cd android
+          for i in 1 2 3; do ./gradlew bundleRelease && break; echo "::warning::Tekrar deneniyor ($i)"; sleep 30; done
           jarsigner -keystore ../upload.jks -storepass "$KS_PASS" -keypass "$KEY_PASS" -signedjar ../BayrakSavaslari-play.aab app/build/outputs/bundle/release/app-release.aab "$KEY_ALIAS"
       - uses: actions/upload-artifact@v4
         if: ${{ env.KS != '' }}
@@ -56,6 +90,7 @@ jobs:
           path: BayrakSavaslari-play.aab
   web:
     runs-on: ubuntu-latest
+    continue-on-error: true
     environment:
       name: github-pages
     steps:
