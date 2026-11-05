@@ -9,9 +9,48 @@
 <link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Bayrak Savaşları">
-<meta name="theme-color" content="#071325">
+<meta name="theme-color" content="#f59f00">
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Rubik:wght@400;600;800&display=swap">
+<script>
+/* === Açılış koruması: eski tarayıcı motorlarında boş ekran yerine bilgi ver === */
+(function(){
+ try{
+  if(!window.structuredClone)window.structuredClone=function(o){return JSON.parse(JSON.stringify(o))};
+  if(!String.prototype.replaceAll)String.prototype.replaceAll=function(a,b){return this.split(a).join(b)};
+  if(!Array.prototype.at)Array.prototype.at=function(i){return this[i<0?this.length+i:i]};
+  if(!Object.fromEntries)Object.fromEntries=function(e){const o={};for(const [k,v] of e)o[k]=v;return o};
+  if(!Object.hasOwn)Object.hasOwn=function(o,k){return Object.prototype.hasOwnProperty.call(o,k)};
+ }catch(e){}
+ var shown=false;
+ function panel(msg){
+  if(shown)return;shown=true;
+  var d=document.createElement('div');
+  d.setAttribute('style','position:fixed;inset:0;z-index:99999;background:#0b1b33;color:#fff;font:15px/1.5 system-ui,Arial,sans-serif;padding:22px;overflow:auto;-webkit-overflow-scrolling:touch');
+  d.innerHTML='<div style="max-width:520px;margin:0 auto"><div style="font-size:52px;text-align:center">⚠️</div>'+
+   '<h2 style="text-align:center;margin:8px 0 6px">Oyun açılamadı</h2>'+
+   '<p style="opacity:.85">Telefonundaki <b>Android System WebView</b> ya da <b>Google Chrome</b> uygulaması eski olabilir. Play Store’dan ikisini de güncelleyip tekrar dene.</p>'+
+   '<p style="opacity:.85">Sorun sürerse tarayıcıdan da oynayabilirsin.</p>'+
+   '<pre id="bwerr" style="white-space:pre-wrap;word-break:break-word;background:#07142a;border:1px solid #1d3557;border-radius:10px;padding:10px;font-size:12px;opacity:.9"></pre>'+
+   '<button id="bwrl" style="width:100%;padding:14px;border:0;border-radius:12px;background:#e8590c;color:#fff;font-size:16px;font-weight:700">Yeniden dene</button></div>';
+  if(document.body)document.body.appendChild(d);
+  else document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(d)});
+  var fill=function(){try{var p=d.querySelector('#bwerr');if(p)p.textContent=msg+'\n\nWebView: '+navigator.userAgent;var r=d.querySelector('#bwrl');if(r)r.onclick=function(){location.reload()}}catch(e){}};
+  fill();setTimeout(fill,50);
+ }
+ window.addEventListener('error',function(e){
+  if(e&&e.target&&e.target!==window)return;              /* resim/script yuklenemedi: onemsiz */
+  var m=e&&e.message||'';
+  if(!m)return;
+  if(/peerjs|cdn\.jsdelivr|fonts\.googleapis/i.test(String(e&&e.filename||'')))return;
+  if(/Peer is not defined|ResizeObserver|Script error/i.test(m))return;
+  if(window.MAP)return;                                   /* oyun acildiysa calismaya devam */
+  panel(m+(e&&e.lineno?(' (satir '+e.lineno+')'):''));
+ },true);
+ window.addEventListener('unhandledrejection',function(e){if(window.MAP)return;panel('Promise: '+(e&&e.reason&&e.reason.message||e.reason||''))});
+ setTimeout(function(){ if(!window.MAP && !shown) panel('Oyun 20 saniyede yüklenemedi.'); },20000);
+})();
+</script>
 <style>
 :root{--bg:#e9eef3;--panel:rgba(255,255,255,.9);--card:#ffffff;--paper:#f4f6f9;--ink:#15202b;--muted:#5c6b7a;--line:#d5dde6;--accent:#e8590c;--gold:#f59f00;--ok:#2f9e44;--bad:#e03131;--shadow:rgba(20,30,45,.18);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1117;--panel:rgba(20,27,36,.92);--card:#18212c;--paper:#111821;--ink:#e8eef5;--muted:#9aa9b9;--line:#2a3745;--accent:#ff7a3d;--gold:#ffc53d;--ok:#51cf66;--bad:#ff6b6b;--shadow:rgba(0,0,0,.55);color-scheme:dark}}
@@ -861,7 +900,7 @@ function boom(mx,my,big,kind){const nk=kind==='nuke',n=nk?90:big?34:20;if(nk)for
  for(let k=0;k<(big?14:8);k++)PARTS.push({x:mx+rnd(-2,2),y:my+rnd(-2,2),vx:rnd(-.01,.01),vy:-rnd(.004,.012),l:0,m:rnd(1200,2200),r:rnd(2,4.5),c:'smoke'})}
 function stepParts(dt){PARTS.forEach(p=>{p.l+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985});PARTS=PARTS.filter(p=>p.l<p.m)}
 function drawView(cv,cam,st,o={}){if(!MAP||!cv.width)return;const era=o.era??2;
- const x=cv.getContext('2d'),S=camS(cv,cam),dpr=Math.min(3,window.devicePixelRatio||1),now=o.now||performance.now(),ps=S/dpr;
+ const x=cv.getContext('2d'),S=camS(cv,cam),dpr=Math.min(DPRCAP(),window.devicePixelRatio||1),now=o.now||performance.now(),ps=S/dpr;
  let [ox,oy]=toScr(cv,cam,0,0);if(SHAKE&&now-SHAKE.t<SHAKE.d&&cv===HOSTCV){const k=1-(now-SHAKE.t)/SHAKE.d;ox+=(Math.random()-.5)*SHAKE.a*k*dpr;oy+=(Math.random()-.5)*SHAKE.a*k*dpr}
  drawLandC(x,cv,st,o,era,S,ox,oy,dpr);x.textAlign='center';x.textBaseline='middle';
  const P=(mx,my)=>[ox+mx*S,oy+my*S];const fs=Math.max(9*dpr,Math.min(3.6*S,15*dpr));x.textAlign='center';x.textBaseline='middle';
@@ -2160,8 +2199,24 @@ function phoneHTML(){let b;
   else b=`<div class="card pcard">${HG.ph==='news'?'<div class="notif">📺 BALL HABER 24 büyük ekranda yayında!</div>'+sumCard(HG,me.c):''}${playerHTML(HG,PID,PS,false)}</div>`}
  return `<div class="phone"><div class="top"><h1 class="logo sm">BAYRAK SAVAŞLARI</h1><button class="chip" data-a="menu">↩</button></div>${b}</div>`}
 
+/* ===== GRAFİK KALİTESİ: cihaza göre otomatik + elle ayar ===== */
+var GQ=(function(){try{return localStorage.getItem('bw_gq')||'auto'}catch(e){return 'auto'}})();
+var AUTOQ=null;
+function DPRCAP(){if(GQ==='yuksek')return 3;if(GQ==='orta')return 1.75;if(GQ==='dusuk')return 1.25;
+ if(AUTOQ)return AUTOQ;const m=/Android|iPhone|iPad/i.test(navigator.userAgent),c=navigator.hardwareConcurrency||4,mem=navigator.deviceMemory||4;
+ return m?(c<=4||mem<=3?1.25:1.75):2.25}
+function setGQ(v){GQ=v;try{localStorage.setItem('bw_gq',v)}catch(e){}AUTOQ=null;try{onResize&&onResize()}catch(_){}
+ try{[HOSTCV,PHCV].forEach(c=>{if(c){c._lk='';const r=c.getBoundingClientRect();fit(c,r.width,r.height)}})}catch(_){}}
+(function(){/* oto düşürme: ilk 6 saniye FPS izle, düşükse kaliteyi indir */
+ let n=0,t0=0,done=false;
+ function tick(t){if(done)return;if(!t0)t0=t;n++;const el=t-t0;
+  if(el>3000){const fps=n/(el/1000);
+   if(GQ==='auto'&&fps<32){AUTOQ=fps<22?1:1.25;try{[HOSTCV,PHCV].forEach(c=>{if(c){c._lk='';const r=c.getBoundingClientRect();fit(c,r.width,r.height)}})}catch(_){}}
+   done=true;return}
+  requestAnimationFrame(tick)}
+ setTimeout(()=>requestAnimationFrame(tick),4000)})();
 /* ===== HARİTA BAĞLAMA & DÖNGÜ ===== */
-function fit(cv,w,h){const dpr=Math.min(3,window.devicePixelRatio||1);w=Math.max(200,Math.round(w));h=Math.round(h);cv.style.width=w+'px';cv.style.height=h+'px';const W=Math.round(w*dpr),H=Math.round(h*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}}
+function fit(cv,w,h){const dpr=Math.min(DPRCAP(),window.devicePixelRatio||1);w=Math.max(200,Math.round(w));h=Math.round(h);cv.style.width=w+'px';cv.style.height=h+'px';const W=Math.round(w*dpr),H=Math.round(h*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}}
 function hostState(){const s=DISP||(G.ph==='lobby'?PREV:G);return{...s,U:G.C.length?G.C.map(c=>c.u):null}}
 function pctx(){if(ROLE==='host'&&MODAL&&MST)return{g:G,pid:MODAL,st:MST,local:true};if(ROLE==='p'&&HG&&HG.ph!=='lobby'&&HG.own.length===NP)return{g:HG,pid:PID,st:PS,local:false};return null}
 function drawHost(now){if(!HOSTCV.isConnected)return;const lob=G.ph==='lobby',pf=LOCAL.find(l=>l.pid===PICKFOR);
@@ -3536,6 +3591,24 @@ function canMoveCap(g,c){return provs(g,c).length>1}
 const _bld9=bldPanel;bldPanel=function(g,ci,st,s,dec,left){const h=_bld9.apply(this,arguments);if(provs(g,ci).length<2)return h;
  const sel=st&&st.sel>=0&&g.own[st.sel]===ci&&st.sel!==CAPOF[ci]?st.sel:-1,ok=dec&&left>0&&sel>=0&&s&&s.g>=10;
  return `<div class="capmv"><b>🏛️ Başkent · ${CT(CAPOF[ci])}</b><small>Başkenti başka şehre taşıyabilirsin: 10💰, halk bir süre tedirgin olur, askerlerin bir kısmı yeni başkente geçer.</small><button class="chip" data-a="ocap" ${ok?'':'disabled'}>🏛️ ${sel>=0?CT(sel)+'’a taşı · 10💰':'Önce haritadan kendi şehrini seç'}</button></div>`+h};
+
+/* ayarlar: grafik kalitesi + mağaza test kodu */
+const _setSync20=setSync;setSync=function(on){_setSync20(on);if(!on)return;const el=document.querySelector('.setc');if(!el||el.querySelector('.gqrow'))return;
+ const names={auto:'Otomatik',yuksek:'Yüksek',orta:'Orta',dusuk:'Düşük (akıcı)'};
+ const r=document.createElement('div');r.className='setr gqrow';
+ r.innerHTML='<span>🎞️ Grafik kalitesi</span><div class="chips" style="gap:4px">'+Object.keys(names).map(k=>`<button class="chip ${GQ===k?'on':''}" data-gq="${k}" style="padding:6px 9px;font-size:12.5px">${names[k]}</button>`).join('')+'</div>';
+ r.querySelectorAll('[data-gq]').forEach(b=>b.onclick=()=>{setGQ(b.getAttribute('data-gq'));setSync(true);toast('Grafik: '+names[GQ])});
+ const f=el.querySelector('.setr');el.insertBefore(r,f?f.nextSibling:null);
+ if(!el.querySelector('.coderow')){const c=document.createElement('div');c.className='setr coderow';
+  c.innerHTML='<span>🎁 Kod gir</span><input class="inp" id="bwcode" placeholder="kod" style="width:46%">';
+  c.querySelector('input').onkeydown=e=>{if(e.key==='Enter')useCode(e.target.value)};
+  el.appendChild(c);const bt=document.createElement('button');bt.className='btn ghost full';bt.textContent='🎁 Kodu kullan';
+  bt.onclick=()=>{const i=document.getElementById('bwcode');useCode(i?i.value:'')};el.appendChild(bt)}};
+function useCode(v){const k=String(v||'').trim().toLowerCase();
+ const M={'bayrak2026':['reklamsiz','senaryo_paketi','parsomen_tema'],'senaryo':['senaryo_paketi'],'reklamsiz':['reklamsiz'],'parsomen':['parsomen_tema'],'tampaket':['reklamsiz','senaryo_paketi','parsomen_tema']};
+ if(!M[k]){toast('❌ Kod geçersiz');return}
+ M[k].forEach(id=>monGrant(id));toast('🎁 Açıldı: '+M[k].length+' içerik');try{applyTheme()}catch(_){}setSync(true)}
+window.useCode=useCode;
 </script>
 </body>
 </html>
