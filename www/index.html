@@ -601,6 +601,64 @@ body:has(.phone) .tutbtn{left:auto;right:66px}
 .adv .grid2>*,.adv .grid3>*,.lobby .grid2>*,.lobby .grid3>*{position:static!important;margin:0!important;width:auto!important;min-width:0}
 .lobby .opt,.adv .opt{display:block;box-sizing:border-box;width:100%;white-space:normal;overflow-wrap:anywhere}
 .dgrid>*{min-width:0}
+.evcost{display:block;opacity:.85;margin:2px 0 6px;font-size:12.5px}
+/* ayarlar ve yardım düğmeleri: haber/TV ekranını kapatmasın */
+body.tvon .setbtn,body.tvon .tutbtn,body[data-view="play"] .setbtn,body[data-view="play"] .tutbtn{opacity:.25}
+@media (pointer:coarse){.setbtn{bottom:auto!important;top:calc(8px + env(safe-area-inset-top,0px))!important;right:10px!important}
+ .tutbtn{bottom:auto!important;top:calc(8px + env(safe-area-inset-top,0px))!important;right:58px!important}}
+/* ===== EK ANİMASYONLAR ===== */
+@keyframes popIn{0%{transform:scale(.82) translateY(10px);opacity:0}60%{transform:scale(1.04) translateY(-2px);opacity:1}100%{transform:scale(1) translateY(0)}}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes shine{0%{background-position:-220% 0}100%{background-position:220% 0}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(232,89,12,.45)}50%{box-shadow:0 0 0 12px rgba(232,89,12,0)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes countUp{from{transform:scale(1.5);color:#ffd43b}to{transform:scale(1)}}
+
+/* kartlar ve paneller yumuşak girsin */
+.evcard,.achpop,.drep,.quests,.npcp,.supb,.infc,.zcure,.vcs,.capmv,.lev,.lcard{animation:popIn .32s cubic-bezier(.2,.9,.3,1.2) both}
+.press,.newsbox,.prow,.mcard,.vnode,.lbtn{animation:slideUp .26s ease both}
+.mgrid .mcard:nth-child(2){animation-delay:.04s}.mgrid .mcard:nth-child(3){animation-delay:.08s}
+.mgrid .mcard:nth-child(4){animation-delay:.12s}.mgrid .mcard:nth-child(5){animation-delay:.16s}
+.mgrid .mcard:nth-child(6){animation-delay:.2s}.mgrid .mcard:nth-child(7){animation-delay:.24s}
+
+/* ana eylem düğmeleri nefes alsın */
+.btn.big{position:relative;overflow:hidden}
+.btn.big::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);background-size:220% 100%;animation:shine 3.4s linear infinite;pointer-events:none}
+[data-a="endday"],[data-a="next"],[data-a="start"]{animation:pulseGlow 2.4s ease-in-out infinite}
+
+/* dokunma geri bildirimi */
+.chip,.btn,.lbtn,.mcard,.vnode,.ptc{transition:transform .12s ease,box-shadow .18s ease,background .18s ease}
+.chip:active,.btn:active,.lbtn:active,.mcard:active,.vnode:active,.ptc:active{transform:scale(.95)}
+.mcard:hover,.vnode:hover:not(:disabled),.lbtn:hover:not(:disabled){transform:translateY(-2px)}
+
+/* seçili sekme ve rozetler */
+.ltabs button.on,.vtabs button.on{animation:popIn .25s ease both}
+.achpop{animation:popIn .45s cubic-bezier(.2,.9,.3,1.3) both,floaty 2.6s ease-in-out 1s infinite}
+.setbtn:active,.tutbtn:active{transform:scale(.88)}
+
+/* kaynak sayıları değişince vurgulansın */
+.res b,.lmoney b,.vdna b{display:inline-block;transition:transform .2s ease}
+.flash{animation:countUp .5s ease both}
+
+/* uyarı ve hata kutuları */
+.notif,.fatg{animation:shakeX .5s ease both}
+/* ilerleme çubukları akıcı */
+.qb i,.popbar i,.lst .qb i{transition:width .6s cubic-bezier(.3,.8,.3,1)}
+/* harita geçişi */
+#hmap canvas,.pmapbox canvas{transition:filter .3s ease}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* TV: konuşma balonları her zaman alt bandın ÜSTÜNDE kalsın */
+.tvchat{z-index:6!important;bottom:118px!important;max-height:calc(100% - 180px);overflow:visible;justify-content:flex-end}
+.tv .ticker{z-index:2}
+.tvchat .msg{pointer-events:none}
+@media (max-width:760px){
+ .tvchat{left:12px!important;right:12px!important;bottom:104px!important;max-width:none;max-height:calc(100% - 160px)}
+ .tvchat .msg{font-size:13.5px;padding:6px 10px}
+ .tvchat .msg.r{margin-left:14px}
+}
+/* tam ekran TV modunda bandın yüksekliği kadar pay bırak */
+.tv.full .tvchat{bottom:132px!important}
 </style>
 </head>
 <body>
@@ -1809,7 +1867,8 @@ function resolve(){if(ENDT){clearTimeout(ENDT);ENDT=null}if(G.ph!=='dec')return;
  const al=G.C.map((c,i)=>i).filter(i=>G.C[i].alive),hum=humanC(G).filter(i=>G.C[i].alive),big=al.find(i=>provs(G,i).length>=Math.ceil(NP*.4));
  G.N.sort((a,b)=>b[3]-a[3]);if(!G.N.length)news('dip',-1,-1,1,-1,'Dünyada sakin bir gün. Diplomatlar çay içiyor ☕');
  const vs=G.mo==='karsi'&&humanC(G).length>1;
- if(G.sciW!=null&&G.C[G.sciW].alive){G.W=G.sciW;G.ph='end'}else if(G.d>=G.md||al.length<=1||!hum.length||big!=null||(vs&&hum.length===1)){G.W=big!=null?big:(vs&&hum.length===1?hum[0]:al.sort((a,b)=>score(G,b)-score(G,a))[0]??0);G.ph='end'}else G.ph='news';
+ const INF=(G.md>=9999);
+ if(!INF&&G.sciW!=null&&G.C[G.sciW].alive){G.W=G.sciW;G.ph='end'}else if(INF?(al.length<=1||!hum.length):(G.d>=G.md||al.length<=1||!hum.length||big!=null||(vs&&hum.length===1))){G.W=big!=null?big:(vs&&hum.length===1?hum[0]:al.sort((a,b)=>score(G,b)-score(G,a))[0]??0);G.ph='end'}else G.ph='news';
  G.sum={};humanC(G).forEach(i=>{const a=PRE[i];if(!a||!G.C[i])return;G.sum[i]=[provs(G,i).length-a[0],G.C[i].g+G.P.filter(p=>p.c===i).reduce((s,p)=>s+(p.g||0),0)-a[1],troops(G,i)-a[2]]});
  push();saveGame();startPlay(S0,evs)}
 
@@ -2109,7 +2168,7 @@ function ordLabel(g,o){const e=g.era;switch(o[0]){
  case 'K':return '📣 Seçim kampanyası (miting)';case 'V':return '💉 Aşı çalışması';case 'G':return `🏛️ Başkenti ${CT(o[1])} şehrine taşı`;case 'Z':return '🧪 Panzehir laboratuvarı';case 'E':return '📜 Olay kararı: '+(+o[1]?'2. seçenek':'1. seçenek');case 'S':return `⚓ ${(straitAt(o[1])||{}).n} ${(g.closed||{})[o[1]]?'aç':'kapat'}`;case 'Y':return `🆘 ${DAT(CN[o[1]].n)} yardım çağrısı`;case 'k':return `🏛️ ${CN[o[1]].n}: konsolosluk aç`;case 'w':return `⚔️ ${DAT(CN[o[1]].n)} savaş ilanı`;
  case 'p':return `🕊️ ${DAT(CN[o[1]].n)} barış teklifi`;case 'i':return `🤝 ${DAT(CN[o[1]].n)} ittifak teklifi`;case 'c':return `📦 ${CN[o[1]].n} ile ticaret`;case 'x':return `📜 ${CN[o[1]].n}: ${CT(o[2])} ültimatomu`}return '?'}
 function simulate(g,c,ord){const C=g.C[c];const s={g:C.g,f:C.f,tr:g.tr.slice(),bp:{},u:{...C.u},has:{}};
- ord.forEach(o=>{s.has[o[0]+(o[1]??'')]=1;switch(o[0]){case 't':s.g-=3;s.f-=1;break;case 'b':s.g-=BLD[o[2]].cost;s.bp[o[1]]=(s.bp[o[1]]||0)+1;break;case 'u':s.g-=UCOST[o[1]];break;case 'r':s.g-=rcost(g,c,o[1]);break;case 's':s.g-=3;break;case 'e':s.g-=4;break;case 'v':s.g-=3;break;case 'k':s.g-=3;break;case 'W':s.g-=WON[o[1]].cost;break;case 'F':s.g-=4;break;case 'K':s.g-=3;break;case 'V':s.g-=6;break;case 'G':s.g-=10;break;case 'Z':s.g-=8;break;case 'm':s.u.mis--;break;case 'n':s.u.nuk--;break;case 'a':s.tr[o[1]]-=amtN(s.tr[o[1]],o[3]);break}});return s}
+ ord.forEach(o=>{s.has[o[0]+(o[1]??'')]=1;switch(o[0]){case 't':s.g-=3;s.f-=1;break;case 'b':s.g-=BLD[o[2]].cost;s.bp[o[1]]=(s.bp[o[1]]||0)+1;break;case 'u':s.g-=UCOST[o[1]];break;case 'r':s.g-=rcost(g,c,o[1]);break;case 's':s.g-=3;break;case 'e':s.g-=4;break;case 'v':s.g-=3;break;case 'k':s.g-=3;break;case 'W':s.g-=WON[o[1]].cost;break;case 'F':s.g-=4;break;case 'K':s.g-=3;break;case 'V':s.g-=6;break;case 'E':{const cst=EVCOST(G,o);if(cst)s.g-=cst;break}case 'G':s.g-=10;break;case 'G':s.g-=10;break;case 'Z':s.g-=8;break;case 'm':s.u.mis--;break;case 'n':s.u.nuk--;break;case 'a':s.tr[o[1]]-=amtN(s.tr[o[1]],o[3]);break}});return s}
 const MAPBOX=`<div class="pmapbox"><div class="mapscroll" id="pmap"></div><div class="mapctl"><button class="chip" data-a="pfocus">🎯 Ülkem</button><button class="chip" data-a="pz" data-v="+">＋</button><button class="chip" data-a="pz" data-v="-">－</button></div></div>`;
 function playerHTML(g,pid,st,local){const me=g.P.find(p=>p.pid===pid);if(!me)return '';if(g.scn==='virus'&&ROLE==='host'&&G.V)return virusHTML();if(g.scn==='hayat'&&ROLE==='host'&&G.H)return lifeHTML();
  const ci=me.c,C=g.C[ci],mine=provs(g,ci),e=g.era,dec=g.ph==='dec'&&st.sent!==g.d&&C.alive,OP=opMax(g),left=OP-st.ord.length,s=simulate(g,ci,st.ord);if(local&&g.mo==='ortak'&&me.g!=null)s.g+=me.g-C.g;
@@ -3613,6 +3672,54 @@ function useCode(v){const k=String(v||'').trim().toLowerCase();
 window.useCode=useCode;
 
 try{window.__BW_OK=1}catch(e){}
+
+/* olay kartı maliyeti ön izleme */
+const EVC={dep:[6,0],sal:[4,0],grv:[5,0],kup:[5,0]};
+function EVCOST(g,o){try{const me=(g&&g.P||[]).find(p=>p.pid===MODAL);const ci=me?me.c:humanC(g)[0];const ev=(g.EV&&g.EV[ci])||(g.C[ci]&&g.C[ci].EV);if(!ev)return 0;const t=EVC[ev.t];return t?(t[o[1]|0]||0):0}catch(_){return 0}}
+const _evCard=eventCard;eventCard=function(g,ci,dec,left,s){let h=_evCard(g,ci,dec,left,s);const ev=(g.C[ci]&&g.C[ci].EV)||(g.EV&&g.EV[ci]);if(!ev||!EVC[ev.t])return h;
+ const cost=EVC[ev.t][0]||0;if(!cost)return h;const poor=s&&s.g<cost;
+ h=h.replace('data-a="oev" data-v="0"','data-a="oev" data-v="0"'+(poor?' disabled':''));
+ h=h.replace('<div class="evb">','<small class="evcost">1. seçenek: <b>'+cost+'💰</b>'+(poor?' — paran yetmiyor!':'')+'</small><div class="evb">');
+ return h};
+
+/* ===== LOBİ: ayarlar paneli açık kalsın, seçince yukarı atmasın ===== */
+var ADVOPEN=false, LOBSCROLL=0;
+document.addEventListener('click',function(e){
+ const sm=e.target.closest('.adv>summary');if(sm){setTimeout(()=>{const d=document.querySelector('.adv');ADVOPEN=!!(d&&d.open)},0);return}
+ if(e.target.closest('.adv'))ADVOPEN=true;
+},true);
+const _render30=render;render=function(){
+ const inLobby=(typeof G!=='undefined'&&G&&G.ph==='lobby');
+ const sc=inLobby?(document.scrollingElement||document.documentElement).scrollTop:0;
+ const card=inLobby?document.querySelector('.lobby .card.set'):null;const csc=card?card.scrollTop:0;
+ _render30.apply(this,arguments);
+ if(!inLobby)return;
+ const d=document.querySelector('.adv');if(d&&ADVOPEN)d.open=true;
+ const c2=document.querySelector('.lobby .card.set');if(c2&&csc)c2.scrollTop=csc;
+ if(sc){const se=document.scrollingElement||document.documentElement;se.scrollTop=sc;requestAnimationFrame(()=>{se.scrollTop=sc})}
+};
+/* ===== DAHA FAZLA KOD ===== */
+const _useCode0=useCode;useCode=function(v){const k=String(v||'').trim().toLowerCase();
+ const EXTRA={
+  'hepsiacik':['reklamsiz','senaryo_paketi','parsomen_tema'],
+  'bora':['reklamsiz','senaryo_paketi','parsomen_tema'],
+  'aslan':['reklamsiz','senaryo_paketi','parsomen_tema'],
+  'cerkezkoy':['reklamsiz','senaryo_paketi','parsomen_tema'],
+  'tester':['reklamsiz','senaryo_paketi','parsomen_tema'],
+  'arkadas':['senaryo_paketi','parsomen_tema'],
+  'zombi':['senaryo_paketi'],'virus':['senaryo_paketi'],'darbe':['senaryo_paketi'],'salgin':['senaryo_paketi'],
+  'harita':['parsomen_tema'],'eskiharita':['parsomen_tema'],
+  'reklamyok':['reklamsiz'],'adfree':['reklamsiz'],
+  'bayrak':['reklamsiz'],'savas':['senaryo_paketi']};
+ if(EXTRA[k]){EXTRA[k].forEach(id=>monGrant(id));toast('🎁 Açıldı: '+EXTRA[k].length+' içerik');try{applyTheme()}catch(_){}setSync(true);return}
+ return _useCode0(v)};
+
+/* kaynak sayıları değişince kısa vurgu */
+(function(){let prev={};setInterval(()=>{try{
+ if(!G||G.ph==='lobby')return;const me=(G.P||[]).find(p=>p.pid===MODAL);const ci=me?me.c:(humanC(G)[0]);const C=G.C&&G.C[ci];if(!C)return;
+ const cur={g:C.g,f:C.f};['g','f'].forEach(k=>{if(prev[k]!=null&&prev[k]!==cur[k]){
+   document.querySelectorAll('.res b,.lmoney b').forEach(e=>{e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash')})}});
+ prev=cur}catch(_){}} ,900)})();
 </script>
 <script>
 /* Service worker: her açılışta yeni sürüm kontrolü, bulunca otomatik yenile */
@@ -3628,9 +3735,10 @@ if('serviceWorker' in navigator){
     });
    });
   }).catch(function(){});
-  var reloaded=false;
+  var hadCtrl=!!navigator.serviceWorker.controller, reloaded=false;
   navigator.serviceWorker.addEventListener('controllerchange',function(){
-   if(reloaded)return;reloaded=true;location.reload();
+   if(!hadCtrl||reloaded)return;        /* ilk kurulumda yenileme yok */
+   reloaded=true;location.reload();
   });
  });
 }

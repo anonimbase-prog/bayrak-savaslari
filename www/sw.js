@@ -1,5 +1,5 @@
 /* Ağ öncelikli: her zaman en yeni sürümü dener, internet yoksa önbellekten açar */
-const C='bayrak-v70';
+const C='bayrak-v73';
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png']).catch(()=>{})))});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{
   const ks=await caches.keys();await Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)));
